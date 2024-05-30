@@ -1,10 +1,22 @@
-import {useState} from 'react';
+import {useRef, useState} from 'react';
+
+
+enum Operator{
+  add,
+  subtract,
+  multiply,
+  divide,
+}
 
 export const useCalculator = () => {
   const [number, setNumber] = useState('0');
+  const [prevNumber, setPrevNumber] = useState('0');
+
+  const lastOperation = useRef<Operator>(); // to store the last operation
 
   function clean() {
     setNumber('0');
+    setPrevNumber("0")
   }
 
   function deleteOperator() {
@@ -30,8 +42,9 @@ export const useCalculator = () => {
       return setNumber( number.replace( '-', '' ) );
     }
 
-    setNumber( '-' + number );
+    setNumber( '-' + number ); // add or remove the "-" sign
   };
+
   const buildNumber = (numberString: string) => {
     if (number.includes('.') && numberString === '.') return;
     setNumber(number + numberString);
@@ -61,13 +74,75 @@ export const useCalculator = () => {
 
     setNumber(number + numberString);
   };
+
+  function setLastNumber() {
+    // cortar el puntico para que no haya problemas con el parse
+    if (number.endsWith('.')) {
+      setPrevNumber(number.slice(0, -1)); // remove the last character
+    } else {
+      setPrevNumber(number);
+    }
+    setNumber('0');
+  }
+
+  function divideOperator() {
+    setLastNumber();
+    lastOperation.current = Operator.divide;
+  }
+  function multiplyOperator() {
+    setLastNumber();
+    lastOperation.current = Operator.multiply;
+  }
+  function subtractOperator() {
+    setLastNumber();
+    lastOperation.current = Operator.subtract;
+  }
+  function addOperator() {
+    setLastNumber();
+    lastOperation.current = Operator.add;
+  }
+
+  function calculatorResult(){
+    const num1 = Number(number);
+    const num2 = Number(prevNumber);
+    switch (lastOperation.current) {
+
+      case Operator.add:
+         setNumber(`${num1 + num2}`);
+        break;
+      case Operator.subtract:
+        setNumber(`${num2 - num1}`);
+        break;
+      case Operator.multiply:
+        setNumber(`${num1 * num2}`);
+        break;
+      case Operator.divide:
+        if (num1 === 0) {
+          setNumber('Error');
+        } else {
+          setNumber(`${num2 / num1}`);
+        }
+        break;
+
+      default:
+        throw new Error('Operation not implemented');
+    }
+
+    setPrevNumber('0');
+  }
   return {
     // properties
     number,
+    prevNumber,
     // methods
     buildNumber,
     clean,
     deleteOperator,
     toggleSign,
+    multiplyOperator,
+    divideOperator,
+    subtractOperator,
+    addOperator,
+    calculatorResult
   };
 };
