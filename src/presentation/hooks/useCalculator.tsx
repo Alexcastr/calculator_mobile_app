@@ -1,22 +1,41 @@
-import {useRef, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 
 
 enum Operator{
-  add,
-  subtract,
-  multiply,
-  divide,
+  add = "+",
+  subtract = "-",
+  multiply = "*",
+  divide = "÷",
 }
 
 export const useCalculator = () => {
+  const [formula, setFormula] = useState<string>(''); // to store the formula [prevNumber, operator, number
   const [number, setNumber] = useState('0');
   const [prevNumber, setPrevNumber] = useState('0');
 
   const lastOperation = useRef<Operator>(); // to store the last operation
 
+  useEffect(() => {
+    if(lastOperation.current){
+      const firstFormulaPart = formula.split(" ").at(0); 
+      setFormula(`${firstFormulaPart} ${lastOperation.current} ${number}`);
+    } else {
+      setFormula(`${number}`);
+    }
+
+  }, [number]);
+
+  useEffect(() => {
+    const subResult = calculateSubResult();
+    setPrevNumber(`${subResult}`);
+   
+  },[formula]  );
+
   function clean() {
     setNumber('0');
     setPrevNumber("0")
+    lastOperation.current = undefined;
+    setFormula("");
   }
 
   function deleteOperator() {
@@ -28,10 +47,8 @@ export const useCalculator = () => {
       temporalNumber = number.substring(1); // quitar el signo
     }
 
-    if (temporalNumber.length > 1) {
-      return setNumber(
-        currentSign + temporalNumber.substring(0, temporalNumber.length - 1),
-      ); // quitar el ultimo caracter
+    if ( temporalNumber.length > 1 ) {
+      return setNumber( currentSign + temporalNumber.slice( 0, -1 ) ); // 
     }
 
     setNumber('0');
@@ -66,7 +83,7 @@ export const useCalculator = () => {
       }
       // Evitar el 0000.0
       if (numberString === '0' && !number.includes('.')) {
-        return setNumber(number);
+        return 
       }
 
       return setNumber(number + numberString);
@@ -76,6 +93,7 @@ export const useCalculator = () => {
   };
 
   function setLastNumber() {
+    calculatorResult();
     // cortar el puntico para que no haya problemas con el parse
     if (number.endsWith('.')) {
       setPrevNumber(number.slice(0, -1)); // remove the last character
@@ -103,37 +121,39 @@ export const useCalculator = () => {
   }
 
   function calculatorResult(){
-    const num1 = Number(number);
-    const num2 = Number(prevNumber);
-    switch (lastOperation.current) {
-
-      case Operator.add:
-         setNumber(`${num1 + num2}`);
-        break;
-      case Operator.subtract:
-        setNumber(`${num2 - num1}`);
-        break;
-      case Operator.multiply:
-        setNumber(`${num1 * num2}`);
-        break;
-      case Operator.divide:
-        if (num1 === 0) {
-          setNumber('Error');
-        } else {
-          setNumber(`${num2 / num1}`);
-        }
-        break;
-
-      default:
-        throw new Error('Operation not implemented');
-    }
+    const result = calculateSubResult();
+    setFormula(`${result}`)
+    lastOperation.current = undefined;
+    setPrevNumber('0');
 
     setPrevNumber('0');
+  }
+
+  function calculateSubResult(): number {
+    const [firstValue, operation, secondValue] = formula.split(' ');
+    const num1 = Number(firstValue);
+    const num2 = Number(secondValue);
+
+    if (isNaN(num2)) return num1;
+    switch (operation) {
+      case Operator.add:
+        return num1 + num2;
+      case Operator.subtract:
+        return num1 - num2;
+      case Operator.multiply:
+        return num1 * num2;
+        case Operator.divide:
+          return num1 / num2;
+  
+        default:
+          throw new Error( 'Operation not implemented' );
+    }
   }
   return {
     // properties
     number,
     prevNumber,
+    formula,
     // methods
     buildNumber,
     clean,

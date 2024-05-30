@@ -1,12 +1,12 @@
 import {View, Text} from 'react-native';
-import { colors, styles } from '../config/theme/app-theme';
-import { CalculatorButton } from '../components/CalculatorButton';
-import { useCalculator } from '../hooks/useCalculator';
+import {colors, styles} from '../config/theme/app-theme';
+import {CalculatorButton} from '../components/CalculatorButton';
+import {useCalculator} from '../hooks/useCalculator';
 
 export default function CalculatorScreen() {
-
   const {
     number,
+    formula,
     prevNumber,
     buildNumber,
     toggleSign,
@@ -16,17 +16,26 @@ export default function CalculatorScreen() {
     divideOperator,
     multiplyOperator,
     subtractOperator,
-    calculatorResult
+    calculatorResult,
   } = useCalculator();
   return (
     <View style={styles.calculatorContainer}>
       <View style={{paddingHorizontal: 30, paddingBottom: 20}}>
         <Text adjustsFontSizeToFit numberOfLines={1} style={styles.mainResult}>
-          {number}
+          {formula}
         </Text>
-        <Text adjustsFontSizeToFit numberOfLines={1} style={styles.subResult}>
-          {prevNumber === '0' ? ' ' : prevNumber}
-        </Text>
+        {
+          ( formula === prevNumber )
+            ? <Text style={ styles.subResult }> </Text>
+            : (
+              <Text
+                adjustsFontSizeToFit
+                numberOfLines={ 1 }
+                style={ styles.subResult }>
+                {  prevNumber }
+              </Text>
+            )
+        }
       </View>
 
       <View style={styles.row}>
