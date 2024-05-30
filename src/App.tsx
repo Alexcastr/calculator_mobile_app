@@ -7,9 +7,9 @@
 
 import React from 'react';
 
-import {StatusBar, Text, View} from 'react-native';
+import {StatusBar, View} from 'react-native';
 import CalculatorScreen from './presentation/screens/CalculatorScreen';
-import { styles } from './presentation/config/theme/App-theme';
+import {styles} from './presentation/config/theme/app-theme';
 
 function App() {
   return (
